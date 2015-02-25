@@ -1,10 +1,8 @@
 /*global require, applicationContext */
-(function () {
-  'use strict';
-  var db = require('org/arangodb').db,
-    sessionsName = applicationContext.collectionName('sessions');
+'use strict';
+var db = require('org/arangodb').db;
+var sessionsName = applicationContext.collectionName('sessions');
 
-  if (db._collection(sessionsName) === null) {
-    db._create(sessionsName, {isSystem: true});
-  }
-}());
+if (db._collection(sessionsName) === null) {
+  db._create(sessionsName, {isSystem: true});
+}
