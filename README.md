@@ -208,6 +208,14 @@ Get a session's time to live.
 
 Returns an integer representing number of milliseconds until the session will expire, or `Infinity` (indicating the session will never expire) if session expiry is disabled.
 
+### Retrieve a session's ID
+
+Get the session ID of a session.
+
+`session.forClient()`
+
+Returns the session's session ID that is accepted by `sessions.get`.
+
 ## License
 
 This code is distributed under the [Apache License](http://www.apache.org/licenses/LICENSE-2.0) by ArangoDB GmbH.
