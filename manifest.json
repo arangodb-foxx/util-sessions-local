@@ -1,8 +1,8 @@
 {
   "name": "sessions",
-  "description": "Session storage for Foxx.",
+  "description": "Collection-based session storage for Foxx.",
   "author": "ArangoDB GmbH",
-  "version": "1.1.0",
+  "version": "2.0.0-dev",
   "license": "Apache License, Version 2.0",
   "repository": {
     "type": "git",
@@ -14,15 +14,17 @@
       "email": "me@pluma.io"
     }
   ],
-  "controllers": {
-    "/": "app.js"
-  },
+
   "exports": {
     "sessionStorage": "storage.js"
   },
-  "defaultDocument": "",
+
   "lib": ".",
+
   "setup": "setup.js",
+
+  "tests": "test/**",
+
   "configuration": {
     "timeToLive": {
       "description": "Session expiry timeout in milliseconds.",
@@ -32,7 +34,7 @@
     "ttlType": {
       "description": "Timestamp session expiry should be checked against.",
       "type": "string",
-      "default": "created"
+      "default": "lastAccess"
     },
     "sidTimestamp": {
       "description": "Append a timestamp to the session id.",

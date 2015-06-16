@@ -1,42 +1,36 @@
 /*global require, exports, applicationContext */
 'use strict';
-var _ = require('underscore');
-var joi = require('joi');
-var internal = require('internal');
-var arangodb = require('org/arangodb');
-var db = arangodb.db;
-var Foxx = require('org/arangodb/foxx');
-var errors = require('./errors');
-var cfg = applicationContext.configuration;
-var Session = Foxx.Model.extend({
+
+const _ = require('underscore');
+const joi = require('joi');
+const internal = require('internal');
+const arangodb = require('org/arangodb');
+const db = arangodb.db;
+const Foxx = require('org/arangodb/foxx');
+const errors = require('./errors');
+const cfg = applicationContext.configuration;
+
+const Session = Foxx.Model.extend({
   schema: {
     _key: joi.string().required(),
-    uid: joi.string().optional(),
-    sessionData: joi.object().required(),
-    userData: joi.object().required(),
-    created: joi.number().integer().required(),
-    lastAccess: joi.number().integer().required(),
-    lastUpdate: joi.number().integer().required()
+    uid: joi.string().allow(null).required().default(null),
+    sessionData: joi.object().required().default('Empty object', Object),
+    userData: joi.object().required().default('Empty object', Object),
+    created: joi.number().integer().required().default('Current date', Date.now),
+    lastAccess: joi.number().integer().required('Current date', Date.now),
+    lastUpdate: joi.number().integer().required('Current date', Date.now)
   }
 });
-var sessions;
 
-if (applicationContext.mount.indexOf('/_system/') === 0) {
-  sessions = new Foxx.Repository(
-    db._collection('_sessions'),
-    {model: Session}
-  );
-} else {
-  sessions = new Foxx.Repository(
-    applicationContext.collection('sessions'),
-    {model: Session}
-  );
-}
+const sessions = new Foxx.Repository(
+  applicationContext.collection('sessions'),
+  {model: Session}
+);
 
 function generateSessionId() {
-  var sid = '';
+  let sid = '';
   if (cfg.sidTimestamp) {
-    sid = internal.base64Encode(Number(new Date()));
+    sid = internal.base64Encode(Date.now());
     if (cfg.sidLength === 0) {
       return sid;
     }
@@ -45,24 +39,36 @@ function generateSessionId() {
   return sid + internal.genRandomAlphaNumbers(cfg.sidLength || 10);
 }
 
-function createSession(sessionData) {
-  var sid = generateSessionId(cfg),
-    now = Number(new Date()),
-    session = new Session({
-      _key: sid,
-      uid: null,
-      sessionData: sessionData || {},
-      userData: {},
-      created: now,
-      lastAccess: now,
-      lastUpdate: now
-    });
+function createSession(sessionData, userData) {
+  const sid = generateSessionId();
+  let session = new Session({
+    _key: sid,
+    uid: (userData && userData._id) || null,
+    sessionData: sessionData || {},
+    userData: userData || {}
+  });
   sessions.save(session);
   return session;
 }
 
-function getSession(sid) {
-  var session;
+function deleteSession(sid) {
+  try {
+    sessions.removeById(sid);
+  } catch (e) {
+    if (
+      e instanceof arangodb.ArangoError
+      && e.errorNum === arangodb.ERROR_ARANGO_DOCUMENT_NOT_FOUND
+    ) {
+      throw new errors.SessionNotFound(sid);
+    } else {
+      throw e;
+    }
+  }
+  return null;
+}
+
+Session.fromClient = function (sid) {
+  let session;
   db._executeTransaction({
     collections: {
       read: [sessions.collection.name()],
@@ -71,44 +77,34 @@ function getSession(sid) {
     action: function () {
       try {
         session = sessions.byId(sid);
+
+        const now = Date.now();
+        session.set('lastAccess', now);
         session.enforceTimeout();
-      } catch (err) {
+
+        sessions.collection.update(
+          session.get('_key'),
+          {lastAccess: now}
+        );
+      } catch (e) {
         if (
-          err instanceof arangodb.ArangoError
-            && err.errorNum === arangodb.ERROR_ARANGO_DOCUMENT_NOT_FOUND
+          e instanceof arangodb.ArangoError
+          && e.errorNum === arangodb.ERROR_ARANGO_DOCUMENT_NOT_FOUND
         ) {
           throw new errors.SessionNotFound(sid);
         } else {
-          throw err;
+          throw e;
         }
       }
-      var now = Number(new Date());
-      sessions.collection.update(session.forDB(), {
-        lastAccess: now
-      });
-      session.set('lastAccess', now);
     }
   });
   return session;
-}
-
-function deleteSession(sid) {
-  try {
-    sessions.removeById(sid);
-  } catch (err) {
-    if (
-      err instanceof arangodb.ArangoError
-        && err.errorNum === arangodb.ERROR_ARANGO_DOCUMENT_NOT_FOUND
-    ) {
-      throw new errors.SessionNotFound(sid);
-    } else {
-      throw err;
-    }
-  }
-  return null;
-}
+};
 
 _.extend(Session.prototype, {
+  forClient: function () {
+    return this.get('_key');
+  },
   enforceTimeout: function () {
     if (this.hasExpired()) {
       throw new errors.SessionExpired(this.get('_key'));
@@ -127,51 +123,47 @@ _.extend(Session.prototype, {
     if (!cfg.timeToLive) {
       return Infinity;
     }
-    var prop = cfg.ttlType;
+    let prop = cfg.ttlType;
     if (!prop || !this.get(prop)) {
       prop = 'created';
     }
     return this.get(prop) + cfg.timeToLive;
   },
   setUser: function (user) {
-    var session = this;
     if (user) {
-      session.set('uid', user.get('_id'));
-      session.set('userData', user.get('userData'));
+      this.set('uid', user.get('_id'));
+      this.set('userData', user.get('userData'));
     } else {
-      delete session.attributes.uid;
-      session.set('userData', {});
+      delete this.attributes.uid;
+      this.set('userData', {});
     }
-    return session;
+    return this;
   },
   save: function () {
-    var session = this,
-      now = Number(new Date());
-    session.set('lastAccess', now);
-    session.set('lastUpdate', now);
-    sessions.replace(session);
-    return session;
+    const now = Date.now();
+    this.set('lastAccess', now);
+    this.set('lastUpdate', now);
+    sessions.replace(this);
+    return this;
   },
   delete: function () {
-    var session = this,
-      now = Number(new Date());
-    session.set('lastAccess', now);
-    session.set('lastUpdate', now);
+    const now = Date.now();
+    const key = this.get('_key');
+    this.set('lastAccess', now);
+    this.set('lastUpdate', now);
     try {
-      deleteSession(session.get('_key'));
-      return true;
+      deleteSession(key);
     } catch (e) {
-      if (e instanceof errors.SessionNotFound) {
-        return false;
+      if (!(e instanceof errors.SessionNotFound)) {
+        throw e;
       }
-      throw e;
+      return false;
     }
+    return true;
   }
 });
 
 exports.create = createSession;
-exports.get = getSession;
+exports.get = Session.fromClient;
 exports.delete = deleteSession;
 exports.errors = errors;
-exports.repository = sessions;
-exports._generateSessionId = generateSessionId;
