@@ -39,13 +39,11 @@ function generateSessionId() {
   return sid + internal.genRandomAlphaNumbers(cfg.sidLength || 10);
 }
 
-function createSession(sessionData, userData) {
+function createSession(sessionData) {
   const sid = generateSessionId();
   let session = new Session({
     _key: sid,
-    uid: (userData && userData._id) || null,
-    sessionData: sessionData || {},
-    userData: userData || {}
+    sessionData: sessionData || {}
   });
   sessions.save(session);
   return session;

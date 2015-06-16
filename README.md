@@ -65,7 +65,7 @@ try {
 Session objects are instances of a Foxx model with the following attributes:
 
 * *sessionData*: volatile session data. This can be an arbitrary object that will be stored with the session in the database. If you want to store session-specific (rather than user-specific) data in the database, this is the right place for that
-* *uid*: the sessions active users *_key* or `undefined` (no active user)
+* *uid*: the sessions active users *_id* or `undefined` (no active user)
 * *userData*: the session's active users *userData* attribute or an empty object
 * *created*: timestamp the session was created at
 * *lastAccess*: timestamp of the last time the session was fetched from the database
@@ -85,7 +85,7 @@ Creates and saves a new instance of the session model.
 
 ```js
 var session = sessionStorage.create(sessionData);
-assertEqual(session.get('sessionData'), sessionData);
+var session = sessionStorage.create(sessionData);
 ```
 
 ### Fetch an existing session
@@ -98,7 +98,7 @@ Attempts to load the session with the given session ID from the database. If the
 
 **Parameter**
 
-* *sessionId*: a session *_key*.
+* *sessionId*: a session ID.
 
 **Examples**
 
@@ -123,7 +123,7 @@ Attempts to delete the session with the given session ID from the database. If t
 
 **Parameter**
 
-* *sessionId*: a session *_key*.
+* *sessionId*: a session ID.
 
 **Examples**
 
@@ -155,7 +155,7 @@ Save a session to the database.
 
 `session.save()`
 
-If you made any changes to the session and are not using the sessions app via Foxx Authentication, you must call this method to commit the changes to the database.
+If you made any changes to the session and are not using the sessions app via Foxx Sessions, you must call this method to commit the changes to the database.
 
 **Examples**
 
@@ -170,7 +170,7 @@ Set the active user of a session.
 
 `session.setUser(user)`
 
-Expects a Foxx model with a *userData* attribute and sets the sessions *uid* attribute to the models *_key* and the sessions *userData* attribute to the models *userData* attribute.
+Expects a Foxx model with a *userData* attribute and sets the sessions *uid* attribute to the models *_id* and the sessions *userData* attribute to the models *userData* attribute.
 
 **Parameter**
 
@@ -180,7 +180,7 @@ Expects a Foxx model with a *userData* attribute and sets the sessions *uid* att
 
 ```js
 session.setUser(user);
-assertEqual(session.get('uid'), user.get('_key'));
+assertEqual(session.get('uid'), user.get('_id'));
 assertEqual(session.get('userData'), user.get('userData'));
 ```
 
