@@ -1,6 +1,6 @@
 # The Sessions Storage
 
-The sessions app provides a session storage JavaScript API that can be used in other Foxx apps.
+The sessions app provides a collection-based session storage JavaScript API that can be used in other Foxx apps.
 
 ## Configuration
 

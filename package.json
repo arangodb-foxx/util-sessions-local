@@ -4,6 +4,6 @@
     "lint": "jshint *.js"
   },
   "devDependencies": {
-    "jshint": "^2.6.0"
+    "jshint": "^2.8.0"
   }
 }
