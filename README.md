@@ -17,8 +17,28 @@ This app exposes a session storage via a JavaScript API named *sessionStorage*.
 
 **Examples**
 
+First add this app to your dependencies:
+
 ```js
-var sessionStorage = Foxx.requireApp('/_system/sessions').sessionStorage;
+{
+  ...
+  "dependencies": {
+    "sessions": "sessions:^2.0.0"
+  }
+  ...
+}
+```
+
+Once you've configured both apps correctly, you can use it like this:
+
+```js
+var Foxx = require('org/arangodb/foxx');
+var controller = new Foxx.Controller(applicationContext);
+var sessionStorage = applicationContext.dependencies.sessions.sessionStorage;
+
+controller.activateSessions({
+  sessionStorage: sessionStorage
+});
 ```
 
 ### Exceptions
@@ -84,7 +104,6 @@ Creates and saves a new instance of the session model.
 **Examples**
 
 ```js
-var session = sessionStorage.create(sessionData);
 var session = sessionStorage.create(sessionData);
 ```
 
