@@ -18,7 +18,9 @@
     "sessionStorage": "storage.js"
   },
   "lib": ".",
-  "setup": "setup.js",
+  "scripts": {
+    "setup": "setup.js"
+  },
   "tests": "test/**",
   "configuration": {
     "timeToLive": {
