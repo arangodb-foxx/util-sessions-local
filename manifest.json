@@ -2,7 +2,7 @@
   "name": "sessions",
   "description": "Collection-based session storage for Foxx.",
   "author": "ArangoDB GmbH",
-  "version": "2.0.0-dev",
+  "version": "2.0.0",
   "license": "Apache License, Version 2.0",
   "repository": {
     "type": "git",
@@ -14,17 +14,12 @@
       "email": "me@pluma.io"
     }
   ],
-
   "exports": {
     "sessionStorage": "storage.js"
   },
-
   "lib": ".",
-
   "setup": "setup.js",
-
   "tests": "test/**",
-
   "configuration": {
     "timeToLive": {
       "description": "Session expiry timeout in milliseconds.",
