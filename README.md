@@ -2,6 +2,8 @@
 
 The sessions app provides a collection-based session storage JavaScript API that can be used in other Foxx apps.
 
+[![Build status](https://img.shields.io/travis/arangodb/foxx-users.svg)](https://travis-ci.org/arangodb/foxx-users)
+
 ## Configuration
 
 This app has the following configuration options:
