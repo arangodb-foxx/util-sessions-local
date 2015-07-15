@@ -13,12 +13,12 @@ const cfg = applicationContext.configuration;
 const Session = Foxx.Model.extend({
   schema: {
     _key: joi.string().required(),
-    uid: joi.string().allow(null).required().default(null),
-    sessionData: joi.object().required().default('Empty object', Object),
-    userData: joi.object().required().default('Empty object', Object),
-    created: joi.number().integer().required().default('Current date', Date.now),
-    lastAccess: joi.number().integer().required('Current date', Date.now),
-    lastUpdate: joi.number().integer().required('Current date', Date.now)
+    uid: joi.string().allow(null).default(null),
+    sessionData: joi.object().default('Empty object', Object),
+    userData: joi.object().default('Empty object', Object),
+    created: joi.number().integer().default('Current date', Date.now),
+    lastAccess: joi.number().integer().default('Current date', Date.now),
+    lastUpdate: joi.number().integer().default('Current date', Date.now)
   }
 });
 
@@ -40,9 +40,8 @@ function generateSessionId() {
 }
 
 function createSession(sessionData) {
-  const sid = generateSessionId();
   let session = new Session({
-    _key: sid,
+    _key: generateSessionId(),
     sessionData: sessionData || {}
   });
   sessions.save(session);
