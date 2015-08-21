@@ -2,7 +2,7 @@
   "name": "sessions",
   "description": "Collection-based session storage for Foxx.",
   "author": "ArangoDB GmbH",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "license": "Apache License, Version 2.0",
   "repository": {
     "type": "git",
