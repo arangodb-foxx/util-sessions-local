@@ -25,7 +25,7 @@ First add this app to your dependencies:
 {
   ...
   "dependencies": {
-    "sessions": "sessions:^2.0.0"
+    "sessions": "sessions-local:^2.0.0"
   }
   ...
 }
